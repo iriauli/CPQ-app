@@ -1,0 +1,26 @@
+<template>
+    <lightning-button-group>
+        <lightning-button label={labels.SF_createShippingAddress} onclick={handleCreateShipping}></lightning-button>
+        <lightning-button label={labels.SF_createBillingAddress} onclick={handleCreateBilling}></lightning-button>
+        <lightning-button label={labels.SF_save} variant="success" icon-name="utility:save" onclick={handleSave}></lightning-button>
+    </lightning-button-group>  
+    <template if:true={showAddressForm}>
+       <lightning-input-address 
+        address-label="Address" 
+        street-label="Street"  
+        city-label="City"     
+        country-label="Country"    
+        province-label="State"   
+        postal-code-label="Zip Code" 
+        street={street}   
+        city={city} 
+        country={country}
+        province={province} 
+        postal-code={postalcode}
+        show-address-lookup 
+        onchange={handleChange}
+      > 
+      </lightning-input-address>  
+      <lightning-map map-markers={mapMarkers}></lightning-map>
+    </template>
+</template>

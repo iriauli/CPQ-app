@@ -1,0 +1,378 @@
+section {
+    display: flex;
+    justify-content: right;
+    align-items: center;
+    margin: 0px 10px 10px 0px;
+}
+
+.slds-modal__container {
+    max-width: 60rem !important;
+    width: 60% !important;
+}
+
+.products {
+    margin-top: 1rem;
+}
+
+.search-input {
+    padding: 0rem 5rem;
+    margin-top: -1rem;
+}
+
+.det>.sum {
+    position: relative;
+    list-style-type: none;
+    outline: none;
+    cursor: pointer;
+    border: 1px solid #eee;
+    padding: 1rem;
+    border-radius: 0.5rem;
+    margin-top: 0.2rem;
+    padding: 0.5rem;
+    padding-left: 1rem;
+    font-weight: 500;
+    letter-spacing: normal;
+    display: flex;
+    align-items: center;
+}
+
+.det>.sum:hover {
+    background-image: linear-gradient(to top, #e6e8fa, #f6f7fd);
+}
+
+.det>.sum::-webkit-details-marker {
+    display: none;
+}
+
+.det>.sum::before {
+    content: '+ ';
+    font-size: 1rem;
+    font-weight: bold;
+    padding-right: 0.88rem;
+}
+
+.det[open]>.sum::before {
+    content: '- ';
+    font-size: 1.2rem;
+    font-weight: bold;
+    margin-right: 0.22rem;
+}
+
+
+.det[open]>.sum {
+    margin-bottom: 0.2rem;
+    background-image: linear-gradient(to top, #e6e8fa, #f6f7fd);
+}
+
+details[open] summary~* {
+    -webkit-animation: fadeIn .5s;
+    -moz-animation: fadeIn .5s;
+    -ms-animation: fadeIn .5s;
+    -o-animation: fadeIn .5s;
+    animation: fadeIn .5s;
+}
+
+@-webkit-keyframes fadeIn {
+    from {
+        opacity: 0
+    }
+
+    to {
+        opacity: 1
+    }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0
+    }
+
+    to {
+        opacity: 1
+    }
+}
+
+.nested {
+    background-color: #f6f7fd;
+    list-style-type: none;
+    outline: none;
+    border: 1px solid #eee;
+    padding: 0.5rem;
+    border-radius: 0.5rem;
+    letter-spacing: normal;
+    margin: 0rem 0rem 0.2rem;
+    margin-left: 1.2rem;
+    display: flex;
+    align-items: center;
+}
+
+.checked {
+    margin-left: auto;
+    margin-left: 0.5rem;
+}
+
+.card-footer {
+    width: 100%;
+    display: flex;
+    justify-content: right;
+    padding: 0.6rem 2rem 0.6rem;
+}
+
+.nested:last-of-type {
+    margin-bottom: 0.2rem;
+}
+
+.modal-body {
+    position: relative;
+    padding: 2rem;
+    height: 60%;
+    min-height: 430px;
+}
+
+/***** Outer Cards *****/
+.product-name {
+    display: flex;
+    justify-content: space-between;
+}
+
+.product-input {
+    width: 170px;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    position: absolute;
+    right: 0px;
+    border-radius: 0.3rem;
+    padding: 0.2rem 0.3rem;
+    margin-right: 0.5rem;
+}
+
+.product-input p {
+    font-weight: 400;
+}
+
+.product-input span {
+    font-weight: 500;
+    padding-right: 5px;
+}
+
+.product-input input {
+    width: 50px;
+    text-align: center;
+    border-radius: 0.3rem;
+    box-sizing: border-box;
+    border: 1px solid #dcdfe2;
+}
+
+/***** Inner Cards *****/
+.nested-info {
+    width: 170px;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    position: absolute;
+    right: 2rem;
+    border-radius: 0.3rem;
+    padding: 0.2rem 0.3rem;
+    margin-right: 0.5rem;
+}
+
+.nested-info p {
+    font-weight: 400;
+}
+
+.nested-info span {
+    font-weight: 600;
+    padding-right: 5px;
+}
+
+.nested-info input {
+    width: 50px;
+    text-align: center;
+    border-radius: 0.3rem;
+    box-sizing: border-box;
+    border: 1px solid #dcdfe2;
+}
+
+/***** Table *****/
+.table-container {
+    padding: 0rem 0.8rem;
+}
+
+.table-container p {
+    padding-left: 1rem;
+}
+
+table {
+    font-family: arial, sans-serif;
+    border-collapse: collapse;
+    width: 100%;
+}
+
+td {
+    width: 10%;
+    border: 1px solid #dddddd;
+    text-align: left;
+    padding: 8px;
+}
+
+th {
+    width: 10%;
+    border: 1px solid #dddddd;
+    text-align: left;
+    padding: 8px;
+    background-color: #f6f7fd;
+}
+
+
+th:nth-child(1) {
+    width: 20%;
+}
+
+td:nth-child(1) {
+    width: 20%;
+}
+
+th:nth-last-child(1) {
+    width: 5%;
+}
+
+td:nth-last-child(1) {
+    width: 5%;
+    text-align: center;
+    font-weight: normal;
+}
+
+
+td .slds-button {
+    height: 20px;
+    min-width: 25px;
+    width: 100%;
+    text-transform: uppercase;
+    font-size: smaller;
+    letter-spacing: 1px;
+    background-color: #f6f7fd;
+    color: black;
+}
+
+td .slds-button:hover {
+    background-color: #e6e9f9;
+}
+
+
+
+/* .thhh {
+all: revert;
+}
+
+.tddd {
+    all: revert;
+} */
+
+
+
+/* tr:nth-child(even) {
+    background-color: #f6f7fd;
+  } */
+
+.table-parent {
+    display: flex;
+    justify-content: center;
+}
+
+.product-table {
+    width: 70%;
+}
+
+
+
+
+.left-side {
+    width: 100%;
+    font-size: 11px;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    border-radius: 0.3rem;
+    padding: 0.2rem 0.3rem;
+    margin-top: 0.5rem;
+    margin-right: 0.5rem;
+    font-weight: 400;
+    text-transform: uppercase;
+    padding-left: 3rem;
+}
+
+.left-side p {
+    border-bottom: 1px dotted #eee;
+}
+
+.right-side {
+    width: 175px;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    padding: 0.2rem 0.6rem;
+}
+
+.right-side p {
+    padding-left: 0rem;
+}
+
+.det2>.sum2 {
+    position: relative;
+    list-style-type: none;
+    outline: none;
+    /* cursor: pointer; */
+    font-weight: 500;
+    letter-spacing: normal;
+    display: flex;
+    align-items: center;
+}
+
+.sum2 {
+    font-weight: 700;
+}
+
+.sum2:hover {
+    background-color: #f6f7fd;
+}
+
+.det2>.sum2::before {
+    position: absolute;
+    padding: 0.5rem;
+    content: '+';
+    font-size: 1rem;
+    font-weight: bold;
+}
+
+.det2[open]>.sum2::before {
+    position: absolute;
+    padding: 0.5rem;
+    content: '-';
+    font-size: 1.2rem;
+    font-weight: bold;
+}
+
+.det2[open]>.sum2 {
+    font-weight: bold;
+    background-color: #f6f7fd;
+}
+
+
+.icons {
+    padding: 5px;
+    border-radius: 50%;
+    border: 1px dotted transparent;
+}
+
+.icons:hover {
+    background-color: white;
+    border: 1px dotted #dcdfe2;
+    cursor: pointer;
+}
+
+input[type=number]:disabled {
+    border: none;
+    background: white;
+  }

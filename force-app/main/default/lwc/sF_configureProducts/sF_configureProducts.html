@@ -1,0 +1,234 @@
+<!-- Configure Products -->
+<template>
+    <!-- lightning button for open modal window -->
+    <section>
+        <lightning-button variant="brand" label="Add Products" title="Add Products" onclick={openModal}
+            class="slds-m-left_x-small">
+        </lightning-button>
+    </section>
+    <!--Use template if:true to display/hide popup based on isModalOpen value-->
+    <template if:true={isModalOpen}>
+        <!-- Modal starts here -->
+        <section role="dialog" tabindex="-1" aria-labelledby="modal-heading-01" aria-modal="true"
+            aria-describedby="modal-content-id-1" class="slds-modal slds-fade-in-open">
+            <div class="slds-modal__container">
+                <!-- Modal header here -->
+                <header class="slds-modal__header">
+                    <button class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse"
+                        title="Close" onclick={closeModal}>
+                        <lightning-icon icon-name="utility:close" alternative-text="close" variant="inverse"
+                            size="small"></lightning-icon>
+                        <span class="slds-assistive-text">Close</span>
+                    </button>
+                    <h2 id="modal-heading-01" class="slds-text-heading_medium slds-hyphenate">{labels.AddProductsButton}
+                    </h2>
+                </header>
+                <!-- Modal body starts here -->
+                <div class="slds-modal__content modal-body" id="modal-content-id-1">
+                    <!-- Search Form -->
+                    <lightning-input type="search" onchange={updateSearch} placeholder="Type to search products..."
+                        class="search-input">
+                    </lightning-input>
+                    <template if:true={loader}>
+                        <lightning-spinner alternative-text="Loading..." size="medium" class="spinnerClass">
+                        </lightning-spinner>
+                    </template>
+                    <br />
+                    <div class="left-side">
+                        <p><span>Product Name</span>
+                        </p>
+                        <div class="right-side">
+                            <p><span></span></p>
+                            <p><span>Quantity</span></p>
+                        </div>
+                    </div>
+                    <template if:true={products}>
+                        <template for:each={allProducts} for:item="product" for:index="index">
+                            <details key={product.Id} class="det">
+                                <summary class="sum">
+                                    {product.Name}
+                                    <div class="product-input">
+                                        <p>
+                                        </p>
+                                        <p><span></span><input type="number" min="1" max="25" value={product.Quantity}
+                                                data-id={product.Id} onchange={changeProductQuantity}></input></p>
+                                    </div>
+                                </summary>
+                                <template for:each={product.OptionProducts} for:item="option">
+                                    <div class="nested" key={option.Id}>
+                                        <div class="checked">
+                                            <lightning-input data-id={option.Id} checked={option.IsOptional}
+                                                type="checkbox" value={option.IsOptional} disabled={option.IsOptional}
+                                                onchange={changeCheckboxValue}>
+                                            </lightning-input>
+                                        </div>
+                                        <p>{option.Name}</p>
+                                        <div class="nested-info">
+                                            <p><span></span>
+                                                <lightning-formatted-number value={option.BasePrice}
+                                                    format-style="currency" currency-code={option.CurrencyIsoCode}>
+                                                </lightning-formatted-number>
+                                            </p>
+                                            <p><span></span><input type="number" min="1" max="25" value={option.Quantity}
+                                                    data-id={option.Id} onchange={changeProductQuantity}></input>
+                                            </p>
+                                        </div>
+                                    </div>
+                                </template>
+                                <div class="card-footer">
+                                    <!--- Button -->
+                                    <lightning-button label="Add Product" title="Non-primary action"
+                                        onclick={addQuoteLineItem} class="slds-m-left_x-small" data-index={index}>
+                                    </lightning-button>
+                                </div>
+                            </details>
+                        </template>
+                        <br />
+                        <div class="table-parent">
+                            <div class="product-table">
+                                <table>
+                                    <tbody>
+                                        <template for:each={modalTable} for:item="product">
+                                            <tr key={product.Id}>
+                                                <th>
+                                                    <div>{product.Name}</div>
+                                                </th>
+                                                <th>
+                                                    <lightning-formatted-number value={product.BasePrice}
+                                                        format-style="currency" currency-code={product.CurrencyIsoCode}>
+                                                    </lightning-formatted-number>
+                                                </th>
+                                                <th>
+                                                    <div>{product.Quantity}</div>
+                                                </th>
+                                            </tr>
+                                            <template for:each={product.newOptions} for:item="item">
+                                                <tr key={item.Id}>
+                                                    <td if:true={product.Name}>
+                                                        <div>{item.Name}</div>
+                                                    </td>
+                                                    <td>
+                                                        <lightning-formatted-number value={item.BasePrice}
+                                                            format-style="currency"
+                                                            currency-code={item.CurrencyIsoCode}>
+                                                        </lightning-formatted-number>
+                                                    </td>
+                                                    <td>
+                                                        <div>{item.Quantity}</div>
+                                                    </td>
+                                                </tr>
+                                            </template>
+                                        </template>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </template>
+                    <template if:true={error}>
+                        <h1>{error}</h1>
+                    </template>
+                </div>
+                <!-- Modal footer starts here -->
+                <footer class="slds-modal__footer">
+                    <button class="slds-button slds-button_brand" onclick={closeModal}
+                        title="Save">{labels.SaveButton}</button>
+                </footer>
+            </div>
+        </section>
+        <div class="slds-backdrop slds-backdrop_open"></div>
+    </template>
+    <lightning-card if:true={columns} title={labels.QuoteLineItems}>
+        <div class="table-container">
+            <table>
+                <tbody>
+                    <tr>
+                        <!-- <th style="width:1%" class="thhh"></th> -->
+                        <template for:each={columns} for:item="key">
+                            <th key={key.Id}>{key}</th>
+                        </template>
+                        <th>Actions</th>
+                    </tr>
+                </tbody>
+            </table>
+            <template for:each={tableItems} for:item="qli">
+                <details key={qli.Key} class="det2">
+                    <summary class="sum2">
+                        <table>
+                            <tbody>
+                                <tr>
+                                    <!-- <td style="width:1%;" class="tddd"></td> -->
+                                    <td if:true={qli.Name}>
+                                        <p>{qli.Name}</p>
+                                    </td>
+                                    <td if:true={qli.Unit_Price__c}>
+                                        <lightning-formatted-number value={qli.Unit_Price__c} format-style="currency"
+                                            currency-code={qli.CurrencyIsoCode}>
+                                        </lightning-formatted-number>
+                                    </td>
+                                    <td if:true={qli.Subtotal__c}>
+                                        <lightning-formatted-number value={qli.Subtotal__c} format-style="currency"
+                                            currency-code={qli.CurrencyIsoCode}>
+                                        </lightning-formatted-number>
+                                    </td>
+                                    <td if:true={qli.Discount__c}>{qli.Discount__c}</td>
+                                    <td>{qli.Quantity__c}
+                                    </td>
+                                    <td if:true={qli.Total_Price__c}>
+                                        <lightning-formatted-number value={qli.Total_Price__c} format-style="currency"
+                                            currency-code={qli.CurrencyIsoCode}>
+                                        </lightning-formatted-number>
+                                    </td>
+                                    <td>
+                                        <lightning-icon icon-name="utility:copy" alternative-text="Clone" title="Clone"
+                                            size="xx-small" class="icons" data-id={qli.Id}
+                                            onclick={quoteLineItemsClone}></lightning-icon>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </summary>
+
+                    <template for:each={qli.newOptions} for:item="child">
+                        <table key={child.Id}>
+                            <tbody>
+                                <tr>
+                                    <!-- <td style="width:1%;" class="tddd"></td> -->
+                                    <td>
+                                        <p>{child.Name}</p>
+                                    </td>
+                                    <td if:true={child.Unit_Price__c}>
+                                        <lightning-formatted-number value={child.Unit_Price__c} format-style="currency"
+                                            currency-code={child.CurrencyIsoCode}>
+                                        </lightning-formatted-number>
+                                    </td>
+                                    <td if:true={child.Subtotal__c}>
+                                        <lightning-formatted-number value={child.Subtotal__c} format-style="currency"
+                                            currency-code={child.CurrencyIsoCode}>
+                                        </lightning-formatted-number>
+                                    </td>
+                                    <td if:true={child.Discount__c}>{child.Discount__c}</td>
+                                    <td>
+                                        <input type="number" min="1" max="25" value={child.Quantity__c}
+                                            data-id={child.Id} onchange={changeQuoteLineItemQuantity}
+                                            disabled={isInputDisabled} style="width: 100%"></input>
+                                    </td>
+                                    <td if:true={child.Total_Price__c}>
+                                        <lightning-formatted-number value={child.Total_Price__c} format-style="currency"
+                                            currency-code={child.CurrencyIsoCode}>
+                                        </lightning-formatted-number>
+                                    </td>
+                                    <td>
+                                        <lightning-icon icon-name={iconName} alternative-text="Edit" title="Edit"
+                                            size="xx-small" style="margin-right: 10px" class="icons" data-id={child.Id}
+                                            onclick={quoteLineItemQuantity}>
+                                        </lightning-icon>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </template>
+                </details>
+            </template>
+        </div>
+    </lightning-card>
+</template>

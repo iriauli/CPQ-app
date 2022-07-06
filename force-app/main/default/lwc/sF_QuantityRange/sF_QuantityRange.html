@@ -1,0 +1,61 @@
+<!-- sldsValidatorIgnore -->
+<template>
+    <lightning-quick-action-panel header="Configure Prices">
+        <table class="styled-table">
+            <thead>
+                <tr>
+                    <th class="w0"></th> 
+                    <th>Quantity From</th>
+                    <th>Quantity To</th> 
+                    <th>Price</th>
+                    <th class="w0"></th> 
+                    <th class="w0"></th> 
+                </tr>
+            </thead>
+            <tbody>
+                <template if:true={loading}>
+                    <lightning-spinner alternative-text="Loading" size="medium"></lightning-spinner>
+                </template>
+                <template if:false={loading}> 
+                    <template for:each={priceRanges} for:item="item" for:index="index">
+                        <tr key={item.Id}>
+                            <td></td>
+                            <td>                    
+                                <lightning-input type="number" onchange={handleRecordFieldUpdate} variant="label-hidden" name="Quantity_From__c" data-id={index} value={item.Quantity_From__c} read-only="true"></lightning-input> 
+                            </td>
+                            <td>
+                                <lightning-input type="number" onchange={handleRecordFieldUpdate} variant="label-hidden" name="Quantity_To__c" data-id={index} value={item.Quantity_To__c} read-only="true"></lightning-input>
+                            </td>
+                            <td>
+                                <lightning-input type="number" onchange={handleRecordFieldUpdate} variant="label-hidden" name="Price__c" data-id={index} value={item.Price__c} read-only="true"></lightning-input>
+                            </td>  
+                            <td>
+                                <lightning-button-icon data-id={index} icon-name="utility:record_update" alternative-text="record_update" title="record_update" onclick={handleRecordUpdate}></lightning-button-icon>
+                            </td>
+                            <td>
+                                <lightning-button-icon data-id={index} icon-name="utility:delete" alternative-text="delete" title="delete" onclick={handleDelete}></lightning-button-icon>
+                            </td>
+                        </tr>
+                    </template>
+                </template>
+                <tr>
+                    <td>
+                        <lightning-button-icon icon-name="utility:add" alternative-text="Add" title="Add" onclick={handleAdd}></lightning-button-icon>
+                    </td>
+                    <td>
+                        <lightning-input type="number" variant="label-hidden" placeholder="Quantity From.." onchange={setQuantityFrom}></lightning-input> 
+                    </td>  
+                    <td>
+                        <lightning-input type="number" variant="label-hidden" placeholder="Quantity To.." onchange={setQuantityTo}></lightning-input>
+                    </td>
+                    <td>
+                        <lightning-input type="number" variant="label-hidden" placeholder="Price.." onchange={setPrice}></lightning-input>
+                    </td>
+                </tr>
+            </tbody> 
+        </table>
+        <div slot="footer">
+            <lightning-button variant="brand" label="Save" onclick={handleSave} class="slds-m-left_x-small"></lightning-button>
+        </div>
+    </lightning-quick-action-panel>
+</template>
