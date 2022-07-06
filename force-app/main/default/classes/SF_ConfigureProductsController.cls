@@ -4,7 +4,7 @@
  * @description: Apex class that includes Configured Products List (Quote Line Items, Products, etc.)
  * @author: Irakli Iriauli
  * @dateCreated: 27/05/2022
- * @lastChange: 26/07/2022 by Irakli Iriauli
+ * @lastChange: 06/07/2022 by Irakli Iriauli
  * ============================================
 */
 public with sharing class SF_ConfigureProductsController {
