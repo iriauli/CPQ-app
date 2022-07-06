@@ -317,10 +317,9 @@ export default class SF_configureProducts extends NavigationMixin(LightningEleme
 }
 
 
+// Rame Cvlileba Gaakete Mainc Vnaxot Ras Shvreba.
 
 
-
-// Test Change
 // Get Records Dynamically
 // getQuoteLineItems({ quoteId: this.recordId })
 // .then(result => {
