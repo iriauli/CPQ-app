@@ -24,23 +24,25 @@ export default class SF_configureProducts extends NavigationMixin(LightningEleme
     error;
     loader = false;
     isModalOpen = false;
-    columns = [];
     data;
-    quoteLineItemData = [];
-    quoteLineItemKeys;
-    products;
-    filteredProducts = [];
     baseprices;
     secondprices;
     options;
     optionId = [];
     genreList;
     newPrice;
+
+    // Modal
+    products;
     allProducts = [];
+    filteredProducts = [];
     productQuantity = 1;
 
     // Get Quote Line Items
+    columns = [];
     quoteLineItems;
+    quoteLineItemData = [];
+    quoteLineItemKeys;
     tableItems = [];
     dataTable;
 
@@ -69,8 +71,18 @@ export default class SF_configureProducts extends NavigationMixin(LightningEleme
         this.recordId = this.currentPageReference?.state?.c__recordId;
     }
 
+    // Get Quote Line Item Columns
+    @wire(getQuoteLineItemColumns)
+    getColumns(result) {
+        if (result.data) {
+            this.columns = result.data;
+        }
+    }
+
     // Get Quote Line Items
-    @wire(getQuoteLineItems, ({ quoteId: '$recordId' }))
+    @wire(getQuoteLineItems, ({
+        quoteId: '$recordId'
+    }))
     retrieveItems(result) {
         this.dataTable = result;
 
@@ -96,81 +108,93 @@ export default class SF_configureProducts extends NavigationMixin(LightningEleme
                     }
                 });
             });
+
+            // bundleItems.map((items) => {
+            //     this.quoteLineItemData.push([
+            //         items.Name,
+            //         items.Unit_Price__c,
+            //         items.Subtotal__c,
+            //         items.Quantity__c,
+            //         items.Discount__c,
+            //         items.Total_Price__c,
+            //         items.CurrencyIsoCode]);
+            // })
+
+            // let keys = [...this.columns];
+            // let values = [...this.quoteLineItemData];
+
+            // this.quoteLineItemKeys = keys;
+            // this.quoteLineItems = values.map(value =>
+            //     Object.fromEntries(
+            //         keys.map((key, index) => ([key, value[index]]))
+            //     )
+            // );
         }
 
         this.tableItems = bundleItems;
     }
 
-    // Get Quote Line Item Columns
-    connectedCallback() {
-        getQuoteLineItemColumns()
-            .then(result => {
-                this.columns = result;
-            })
-            .catch(error => {
-                this.error = error.message;
-            })
-    }
-
-    // Client-Side Search From
-    updateSearch(event) {
-        const regex = new RegExp(event.target.value, 'i')
-        this.allProducts = this.allProducts.filter(
-            value => regex.test(value.Name)
-        );
-    }
-
     // Products List on Modal Click
     openModal() {
         this.loader = true;
-        getAllProducts({ quoteId: this.recordId })
-            .then(result => {
-                this.products = result;
-                this.filteredProducts = result;
+        getAllProducts({
+            quoteId: this.recordId
+        }).then(result => {
+            this.products = result;
 
-                this.products.forEach(product => {
-                    if (product.isBundle === true) {
-                        this.allProducts.push({
-                            Id: product.Id,
-                            Name: product.productName,
-                            pliId: product.priceListItemId,
-                            BasePrice: product.basePrice,
-                            IsBundle: product.isBundle,
-                            CurrencyIsoCode: product.currencyIsoCode,
-                            Quantity: this.productQuantity,
-                            OptionProducts: []
-                        })
-                    }
-                })
-
-                this.products.forEach(option => {
-                    if (option.isBundle === false) {
-                        this.allProducts.forEach(item => {
-                            if (item.Id === option.productId) {
-                                item.OptionProducts.push({
-                                    Id: option.Id,
-                                    parentId: option.productId,
-                                    Name: option.productName,
-                                    pliId: option.priceListItemId,
-                                    BasePrice: option.basePrice,
-                                    IsBundle: option.isBundle,
-                                    IsOptional: option.isOptional,
-                                    CurrencyIsoCode: option.currencyIsoCode,
-                                    Quantity: this.productQuantity
-                                })
-                            }
-                        })
-                    }
-                })
+            this.products.forEach(product => {
+                if (product.isBundle === true) {
+                    this.allProducts.push({
+                        Id: product.Id,
+                        Name: product.productName,
+                        pliId: product.priceListItemId,
+                        BasePrice: product.basePrice,
+                        IsBundle: product.isBundle,
+                        CurrencyIsoCode: product.currencyIsoCode,
+                        Quantity: this.productQuantity,
+                        OptionProducts: []
+                    })
+                }
             })
-            .catch(error =>
-                this.error = error.message
-            )
-            .finally(() => this.loader = false);
+
+            this.products.forEach(option => {
+                if (option.isBundle === false) {
+                    this.allProducts.forEach(item => {
+                        if (item.Id === option.productId) {
+                            item.OptionProducts.push({
+                                Id: option.Id,
+                                parentId: option.productId,
+                                Name: option.productName,
+                                pliId: option.priceListItemId,
+                                BasePrice: option.basePrice,
+                                IsBundle: option.isBundle,
+                                IsOptional: option.isOptional,
+                                CurrencyIsoCode: option.currencyIsoCode,
+                                Quantity: this.productQuantity
+                            })
+                        }
+                    })
+                }
+            })
+            this.filteredProducts.push(...this.allProducts);
+        }).catch(error =>
+            this.error = error.message
+        ).finally(() =>
+            this.loader = false
+        );
         this.isModalOpen = true;
     }
     closeModal() {
         this.isModalOpen = false;
+    }
+
+
+    // Client-Side Search From
+    updateSearch(event) {
+        const regex = new RegExp(event.target.value, 'i')
+        this.allProducts = this.filteredProducts.filter(
+            value => regex.test(value.Name)
+        );
     }
 
     // Change Product Quantity
@@ -231,20 +255,23 @@ export default class SF_configureProducts extends NavigationMixin(LightningEleme
         collectedProducts.push(...filterBundle, ...this.filterProducts);
 
         this.loader = true;
-        createQuoteLineItems({ products: collectedProducts, quoteId: this.recordId })
-            .then(() => {
-                this.loader = false;
-                refreshApex(this.dataTable);
-                const event = new ShowToastEvent({
-                    title: 'Success!',
-                    message: 'Quote line item has been updated successfully.',
-                    variant: 'success',
-                });
-                this.dispatchEvent(event);
-            })
-            .catch(error =>
-                this.error = error.message
-            )
+
+        createQuoteLineItems({
+            products: collectedProducts,
+            quoteId: this.recordId
+        }).then(() => {
+            this.loader = false;
+
+            refreshApex(this.dataTable);
+            const event = new ShowToastEvent({
+                title: 'Success!',
+                message: 'Quote line item has been updated successfully.',
+                variant: 'success',
+            });
+            this.dispatchEvent(event);
+        }).catch(error =>
+            this.error = error.message
+        )
     }
 
     // Change Quote Line Item Quantity
@@ -269,22 +296,22 @@ export default class SF_configureProducts extends NavigationMixin(LightningEleme
         this.isInputDisabled = false;
 
         if (this.optionItems.Id === quoteLineItemId) {
-            updateQuoteLineItemQuantity({ option: this.optionItems })
-                .then(() => {
-                    refreshApex(this.dataTable);
-                    this.iconName = 'utility:edit';
-                    this.isInputDisabled = true;
+            updateQuoteLineItemQuantity({
+                option: this.optionItems
+            }).then(() => {
+                refreshApex(this.dataTable);
+                this.iconName = 'utility:edit';
+                this.isInputDisabled = true;
 
-                    const event = new ShowToastEvent({
-                        title: 'Success!',
-                        message: 'Quantity has been updated successfully.',
-                        variant: 'success',
-                    });
-                    this.dispatchEvent(event);
-                })
-                .catch(error =>
-                    this.error = error.message
-                )
+                const event = new ShowToastEvent({
+                    title: 'Success!',
+                    message: 'Quantity has been updated successfully.',
+                    variant: 'success',
+                });
+                this.dispatchEvent(event);
+            }).catch(error =>
+                this.error = error.message
+            )
         }
     }
 
@@ -294,48 +321,28 @@ export default class SF_configureProducts extends NavigationMixin(LightningEleme
 
         let bundleItems = [];
         bundleItems = this.tableItems.filter(item => item.Id === quoteLineItemId);
-        
+
         bundleItems.forEach(bundle => {
             bundle.newOptions.forEach(child => {
                 bundleItems.push(child);
             });
         });
 
-        cloneQuoteLineItems({ qlis: bundleItems, quoteId: this.recordId })
-            .then(() => {
-                refreshApex(this.dataTable);
+        cloneQuoteLineItems({
+            qlis: bundleItems,
+            quoteId: this.recordId
+        }).then(() => {
+            refreshApex(this.dataTable);
 
-                const event = new ShowToastEvent({
-                    title: 'Success!',
-                    message: 'Quantity has been updated successfully.',
-                    variant: 'success',
-                });
-                this.dispatchEvent(event);
+            const event = new ShowToastEvent({
+                title: 'Success!',
+                message: 'Quantity has been updated successfully.',
+                variant: 'success',
             });
+            this.dispatchEvent(event);
+        }).catch(error =>
+            this.error = error.message
+        )
     }
 
 }
-
-
-// Rame Cvlileba Gaakete Mainc Vnaxot Ras Shvreba.
-
-
-// Get Records Dynamically
-// getQuoteLineItems({ quoteId: this.recordId })
-// .then(result => {
-//     this.data = result;
-//     this.data.map((items) => {
-//         this.quoteLineItemData.push([items.Name, items.Unit_Price__c, items.Subtotal__c, items.Quantity__c, items.Discount__c, items.Total_Price__c, items.CurrencyIsoCode]);
-//     })
-//     let keys = [...this.columns];
-//     let values = [...this.quoteLineItemData];
-//     this.quoteLineItemKeys = keys;
-//     this.quoteLineItems = values.map(value =>
-//         Object.fromEntries(
-//             keys.map((key, index) => ([key, value[index]]))
-//         )
-//     );
-//     console.log(this.data);
-// }).catch(error => {
-//     this.error = error.message;
-// })
