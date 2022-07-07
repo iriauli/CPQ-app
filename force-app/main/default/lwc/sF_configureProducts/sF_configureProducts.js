@@ -108,27 +108,6 @@ export default class SF_configureProducts extends NavigationMixin(LightningEleme
                     }
                 });
             });
-
-            // bundleItems.map((items) => {
-            //     this.quoteLineItemData.push([
-            //         items.Name,
-            //         items.Unit_Price__c,
-            //         items.Subtotal__c,
-            //         items.Quantity__c,
-            //         items.Discount__c,
-            //         items.Total_Price__c,
-            //         items.CurrencyIsoCode]);
-            // })
-
-            // let keys = [...this.columns];
-            // let values = [...this.quoteLineItemData];
-
-            // this.quoteLineItemKeys = keys;
-            // this.quoteLineItems = values.map(value =>
-            //     Object.fromEntries(
-            //         keys.map((key, index) => ([key, value[index]]))
-            //     )
-            // );
         }
 
         this.tableItems = bundleItems;
@@ -177,8 +156,15 @@ export default class SF_configureProducts extends NavigationMixin(LightningEleme
                 }
             })
             this.filteredProducts.push(...this.allProducts);
-        }).catch(error =>
-            this.error = error.message
+        }).catch(() => {
+            this.dispatchEvent(
+                new ShowToastEvent({
+                    title: 'Error!',
+                    message: 'Error while fetching products.',
+                    variant: 'error',
+                })
+            );
+        }
         ).finally(() =>
             this.loader = false
         );
@@ -187,7 +173,6 @@ export default class SF_configureProducts extends NavigationMixin(LightningEleme
     closeModal() {
         this.isModalOpen = false;
     }
-
 
     // Client-Side Search From
     updateSearch(event) {
@@ -253,7 +238,6 @@ export default class SF_configureProducts extends NavigationMixin(LightningEleme
 
         const collectedProducts = [];
         collectedProducts.push(...filterBundle, ...this.filterProducts);
-
         this.loader = true;
 
         createQuoteLineItems({
@@ -261,17 +245,25 @@ export default class SF_configureProducts extends NavigationMixin(LightningEleme
             quoteId: this.recordId
         }).then(() => {
             this.loader = false;
-
             refreshApex(this.dataTable);
-            const event = new ShowToastEvent({
-                title: 'Success!',
-                message: 'Quote line item has been updated successfully.',
-                variant: 'success',
-            });
-            this.dispatchEvent(event);
-        }).catch(error =>
-            this.error = error.message
-        )
+
+            this.dispatchEvent(
+                new ShowToastEvent({
+                    title: 'Success!',
+                    message: 'Quote line items has been updated successfully.',
+                    variant: 'success',
+                })
+            );
+        }).catch(() => {
+            this.loader = false;
+            this.dispatchEvent(
+                new ShowToastEvent({
+                    title: 'Error!',
+                    message: 'Error while updating quote line items.',
+                    variant: 'error',
+                })
+            );
+        })
     }
 
     // Change Quote Line Item Quantity
@@ -303,15 +295,22 @@ export default class SF_configureProducts extends NavigationMixin(LightningEleme
                 this.iconName = 'utility:edit';
                 this.isInputDisabled = true;
 
-                const event = new ShowToastEvent({
-                    title: 'Success!',
-                    message: 'Quantity has been updated successfully.',
-                    variant: 'success',
-                });
-                this.dispatchEvent(event);
-            }).catch(error =>
-                this.error = error.message
-            )
+                this.dispatchEvent(
+                    new ShowToastEvent({
+                        title: 'Success!',
+                        message: 'Quantity has been updated successfully.',
+                        variant: 'success',
+                    })
+                );
+            }).catch(() => {
+                this.dispatchEvent(
+                    new ShowToastEvent({
+                        title: 'Error!',
+                        message: 'Error while updating quantity.',
+                        variant: 'error',
+                    })
+                );
+            })
         }
     }
 
@@ -334,15 +333,49 @@ export default class SF_configureProducts extends NavigationMixin(LightningEleme
         }).then(() => {
             refreshApex(this.dataTable);
 
-            const event = new ShowToastEvent({
-                title: 'Success!',
-                message: 'Quantity has been updated successfully.',
-                variant: 'success',
-            });
-            this.dispatchEvent(event);
-        }).catch(error =>
-            this.error = error.message
-        )
+            this.dispatchEvent(
+                new ShowToastEvent({
+                    title: 'Success!',
+                    message: 'Quote line items has been cloned successfully.',
+                    variant: 'success',
+                })
+            );
+        }).catch(() => {
+            this.dispatchEvent(
+                new ShowToastEvent({
+                    title: 'Error!',
+                    message: 'Error while cloning quote line items.',
+                    variant: 'error',
+                })
+            );
+        })
     }
 
 }
+
+
+
+
+
+// bundleItems.map((items) => {
+//     this.quoteLineItemData.push([
+//         items.Name,
+//         items.Unit_Price__c,
+//         items.Subtotal__c,
+//         items.Quantity__c,
+//         items.Discount__c,
+//         items.Total_Price__c,
+//         items.CurrencyIsoCode]);
+// })
+
+// let keys = [...this.columns];
+// let values = [...this.quoteLineItemData];
+// console.log(this.columns);
+// console.log(this.quoteLineItemData);
+
+// this.quoteLineItemKeys = keys;
+// this.quoteLineItems = values.map(value =>
+//     Object.fromEntries(
+//         keys.map((key, index) => ([key, value[index]]))
+//     )
+// );

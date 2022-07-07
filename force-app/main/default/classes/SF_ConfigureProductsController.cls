@@ -24,12 +24,17 @@ public with sharing class SF_ConfigureProductsController {
         
         List<String> columnList = new List<String>();
             for(String column : columns){
+
                 String columnNames = (String)Schema.getGlobalDescribe().get('SF_Quote_Line_Item__c').getDescribe().fields.getMap().get(column).getDescribe().getLabel();
+
                 if(columnNames != 'Currency Iso Code')
                     columnList.add(columnNames);
                 }
 
-        return columnList;
+        Cache.Org.put('local.QuoteLineItems.qliColumns', columnList);
+        List<String> cachedColumns = (List<String>)Cache.Org.get('local.QuoteLineItems.qliColumns');
+
+        return cachedColumns;
     }
 
     /*
@@ -38,10 +43,7 @@ public with sharing class SF_ConfigureProductsController {
      */
     @AuraEnabled(cacheable=true)
     public static List<SF_Quote_Line_Item__c> getQuoteLineItems(Id quoteId) {
-        List<Quote_Line_Item_Config__mdt> metaDataFields = [SELECT Fields__c FROM Quote_Line_Item_Config__mdt];
-
-        Cache.Org.put('local.QuoteLineItems.qliFields', metaDataFields);
-        List<Quote_Line_Item_Config__mdt> fieldsFromMetadata = (List<Quote_Line_Item_Config__mdt>)Cache.Org.get('local.QuoteLineItems.qliFields');
+        List<Quote_Line_Item_Config__mdt> fieldsFromMetadata = [SELECT Fields__c FROM Quote_Line_Item_Config__mdt];
 
         List<String> fields = fieldsFromMetadata[0].Fields__c.split(',');
         String fieldString = string.join(fields,',');
