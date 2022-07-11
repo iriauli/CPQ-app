@@ -123,13 +123,12 @@ public with sharing class SF_ConfigureProductsController {
                 Product__c = qli.Product__c,
                 Price_List_Item__c = qli.Price_List_Item__c,
                 Quote__c = quoteId,
-                // Total_Price__c = qli.Total_Price__c,
-                // Subtotal__c = qli.Subtotal__c,
+                Total_Price__c = qli.Total_Price__c,
+                Subtotal__c = qli.Subtotal__c,
                 Quantity__c = qli.Quantity__c,
                 CurrencyIsoCode = qli.CurrencyIsoCode,
                 Discount__c = 10,
                 Is_Bundle__c = qli.Is_Bundle__c
-    
             );
                 quoteLineItemList.add(newQuoteLineItem);     
         }
@@ -169,13 +168,12 @@ public with sharing class SF_ConfigureProductsController {
                 Product__c = pr.Id,
                 Price_List_Item__c = pr.pliId,
                 Quote__c = quoteId,
-                // Total_Price__c = pr.basePrice,
-                // Subtotal__c = pr.basePrice,
+                Total_Price__c = pr.totalPrice,
+                Subtotal__c = pr.subtotal,
                 Quantity__c = pr.quantity,
                 CurrencyIsoCode = pr.currencyIsoCode,
                 Discount__c = 10,
                 Is_Bundle__c = pr.isBundle
-
             );
                 quoteLineItemList.add(newQuoteLineItem);     
         }
@@ -205,6 +203,8 @@ public with sharing class SF_ConfigureProductsController {
         @AuraEnabled public String name { get; set; }
         @AuraEnabled public Id pliId { get; set; }
         @AuraEnabled public Decimal quantity { get; set; }
+        @AuraEnabled public Decimal totalPrice { get; set; }
+        @AuraEnabled public Decimal subtotal { get; set; }
         @AuraEnabled public String currencyIsoCode { get; set; }
         @AuraEnabled public Boolean isBundle { get; set; }
     }

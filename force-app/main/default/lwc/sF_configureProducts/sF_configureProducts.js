@@ -225,6 +225,7 @@ export default class SF_configureProducts extends NavigationMixin(LightningEleme
             this.rowData.newOptions.push(el);
         })
 
+            console.log(this.rowData, 'asdddddddddd');
         const filterBundle = [];
         filterBundle.push({
             Id: this.rowData.Id,

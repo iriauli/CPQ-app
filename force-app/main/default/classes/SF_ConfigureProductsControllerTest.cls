@@ -53,7 +53,7 @@ public with sharing class SF_ConfigureProductsControllerTest {
         insert testProduct;
 
         SF_Price_List__c testPriceList = new SF_Price_List__c(
-            Name = 'USD_Price_List',
+            Name = 'USD Price List',
             CurrencyIsoCode = 'USD'
         );
 
@@ -84,8 +84,8 @@ public with sharing class SF_ConfigureProductsControllerTest {
             Product__c = testPriceListItem.Product__c,
             Price_List_Item__c = testPriceListItem.Id,
             Quote__c = testQuote.Id,
-            // Total_Price__c = 100,
-            // Subtotal__c = 100,
+            Total_Price__c = 100,
+            Subtotal__c = 100,
             Quantity__c = 1,
             Discount__c = 10,
             CurrencyIsoCode = 'USD', 
@@ -99,8 +99,8 @@ public with sharing class SF_ConfigureProductsControllerTest {
             Product__c = testPriceListItem.Product__c,
             Price_List_Item__c = testPriceListItem.Id,
             Quote__c = testQuote.Id,
-            // Total_Price__c = 100,
-            // Subtotal__c = 100,
+            Total_Price__c = 100,
+            Subtotal__c = 100,
             Quantity__c = 1,
             Discount__c = 10,
             CurrencyIsoCode = 'USD', 
@@ -142,10 +142,68 @@ public with sharing class SF_ConfigureProductsControllerTest {
         List<Opportunity> testOpportunity = [SELECT Id FROM Opportunity WHERE AccountId =:testAccount[0].Id];
         List<SF_Quote__c> testQuote = [SELECT Id FROM SF_Quote__c WHERE Account__c =:testAccount[0].Id AND Opportunity__c =:testOpportunity[0].Id];
 
-        List<SF_Quote_Line_Item__c> qlis = [SELECT Id, Name, Product__c, Price_List_Item__c, Quote__c, Quantity__c, CurrencyIsoCode, Is_Bundle__c FROM SF_Quote_Line_Item__c WHERE Quote__c =:testQuote[0].Id];
-        SF_ConfigureProductsController.cloneQuoteLineItems(qlis, testQuote[0].Id);
+        List<SF_Quote_Line_Item__c> quoteLineItems = [SELECT Id, Name, Product__c, Price_List_Item__c, Quote__c, Quantity__c, Total_Price__c, Subtotal__c, CurrencyIsoCode, Is_Bundle__c FROM SF_Quote_Line_Item__c WHERE Quote__c =:testQuote[0].Id];
+        SF_ConfigureProductsController.cloneQuoteLineItems(quoteLineItems, testQuote[0].Id);
         
-        List<SF_Quote_Line_Item__c> allQlis = [SELECT Id FROM SF_Quote_Line_Item__c WHERE Quote__c =:testQuote[0].Id];
-        System.assert(allQlis.size() > 3, 'Clone Failed');
+        List<SF_Quote_Line_Item__c> allQuoteLineItems = [SELECT Id FROM SF_Quote_Line_Item__c WHERE Quote__c =:testQuote[0].Id];
+        System.assert(allQuoteLineItems.size() > 3, 'Clone Failed');
     }
+
+    /*
+     * @author: Irakli Iriauli
+     * @description: Get Quote Line Items Test
+     */
+    @isTest
+    public static void test_getQuoteLineItems() {
+        List<Account> testAccount = [SELECT Id FROM Account WHERE Name = 'Jason'];
+        List<Opportunity> testOpportunity = [SELECT Id FROM Opportunity WHERE AccountId =:testAccount[0].Id];
+        List<SF_Quote__c> testQuote = [SELECT Id FROM SF_Quote__c WHERE Account__c =:testAccount[0].Id AND Opportunity__c =:testOpportunity[0].Id];
+
+        System.assert((SF_ConfigureProductsController.getQuoteLineItems(testQuote[0].Id)).size() > 0, 'Quote Line Items Not Found');
+    }
+
+    /*
+     * @author: Irakli Iriauli
+     * @description: Create Quote Line Items Test
+     */
+    @isTest
+    public static void test_createQuoteLineItems() {
+        List<Account> testAccount = [SELECT Id FROM Account WHERE Name = 'Jason'];
+        List<Opportunity> testOpportunity = [SELECT Id FROM Opportunity WHERE AccountId =:testAccount[0].Id];
+        List<SF_Quote__c> testQuote = [SELECT Id FROM SF_Quote__c WHERE Account__c =:testAccount[0].Id AND Opportunity__c =:testOpportunity[0].Id];
+
+        List<Product2> testProduct = [SELECT Id, Name FROM Product2 WHERE Name='TestProduct'];
+
+        List<SF_Price_List__c> testPriceList = [SELECT Id FROM SF_Price_List__c WHERE Name ='USD Price List'];
+        List<SF_Price_List_Item__c> testPriceListItems = [SELECT Id, Base_Price__c, Product__c FROM SF_Price_List_Item__c 
+                                                WHERE Price_List__c =:testPriceList[0].Id AND Product__c =:testProduct[0].Id];
+
+        List<SF_ConfigureProductsController.productToQuoteLineItemWrapper> testTwoWrappers = new List<SF_ConfigureProductsController.productToQuoteLineItemWrapper>();
+
+        SF_ConfigureProductsController.productToQuoteLineItemWrapper testBundleWrapper = new SF_ConfigureProductsController.productToQuoteLineItemWrapper();
+            testBundleWrapper.name = 'Test Bundle Quote Line Item';
+            testBundleWrapper.Id = testPriceListItems[0].Product__c;
+            testBundleWrapper.pliId = testPriceListItems[0].Id;
+            testBundleWrapper.quantity = 1;
+            testBundleWrapper.isBundle = true;
+            testBundleWrapper.currencyIsoCode = 'USD';
+
+        testTwoWrappers.add(testBundleWrapper);
+
+        SF_ConfigureProductsController.productToQuoteLineItemWrapper testChildWrapper = new SF_ConfigureProductsController.productToQuoteLineItemWrapper();
+            testChildWrapper.name = 'Test Child Quote Line Item';
+            testChildWrapper.Id = testPriceListItems[0].Product__c;
+            testChildWrapper.pliId = testPriceListItems[0].Id;
+            testChildWrapper.quantity = 1;
+            testChildWrapper.isBundle = false;
+            testChildWrapper.currencyIsoCode = 'USD';
+            
+        testTwoWrappers.add(testChildWrapper);
+
+        SF_ConfigureProductsController.createQuoteLineItems(testTwoWrappers, testQuote[0].Id);
+        List<SF_Quote_Line_Item__c> allQuoteLineItems = [SELECT Id FROM SF_Quote_Line_Item__c WHERE Quote__c =:testQuote[0].Id];
+
+        System.assert(allQuoteLineItems.size() == 4, 'Quote Line Item Creating Error');
+    }
+
 }
