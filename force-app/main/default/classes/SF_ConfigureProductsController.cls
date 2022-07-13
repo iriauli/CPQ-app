@@ -113,44 +113,33 @@ public with sharing class SF_ConfigureProductsController {
      * @description: Clone Quote Line Items
      */
     @AuraEnabled
-    public static void cloneQuoteLineItems(List<SF_Quote_Line_Item__c> qlis, Id quoteId) {
+    public static void cloneQuoteLineItems(Id qliId) {
+        List<Quote_Line_Item_Config__mdt> fieldsFromMetadata = [SELECT Fields__c FROM Quote_Line_Item_Config__mdt];
+        List<String> fields = fieldsFromMetadata[0].Fields__c.split(',');
+        String fieldString = string.join(fields,',');
 
-        List<SF_Quote_Line_Item__c> quoteLineItemList = new List<SF_Quote_Line_Item__c>();
-        
-        for(SF_Quote_Line_Item__c qli : qlis) {
-            SF_Quote_Line_Item__c newQuoteLineItem = new SF_Quote_Line_Item__c(
-                Name = qli.Name,
-                Product__c = qli.Product__c,
-                Price_List_Item__c = qli.Price_List_Item__c,
-                Quote__c = quoteId,
-                Total_Price__c = qli.Total_Price__c,
-                Subtotal__c = qli.Subtotal__c,
-                Quantity__c = qli.Quantity__c,
-                CurrencyIsoCode = qli.CurrencyIsoCode,
-                Discount__c = 10,
-                Is_Bundle__c = qli.Is_Bundle__c
-            );
-                quoteLineItemList.add(newQuoteLineItem);     
+        String dynamicQueryForBundles = 'SELECT Id, Quote_Line_Item__c, Is_Bundle__c, Product__c, Price_List_Item__c, Quote__c, ' + fieldString + ' FROM SF_Quote_Line_Item__c WHERE Id =:qliId';
+        List<SF_Quote_Line_Item__c> bundleItems = Database.query(dynamicQueryForBundles);
+
+        List<SF_Quote_Line_Item__c> clonedBundleItems = new List<SF_Quote_Line_Item__c>();
+        for(SF_Quote_Line_Item__c bundleItem : bundleItems) {
+            SF_Quote_Line_Item__c cloneBundles = bundleItem.clone(false, true, false, false);
+            clonedBundleItems.add(cloneBundles);
+        }
+    
+        insert clonedBundleItems;
+
+        String dynamicQueryForOptions = 'SELECT Id, Quote_Line_Item__c, Is_Bundle__c, Product__c, Price_List_Item__c, Quote__c, ' + fieldString + ' FROM SF_Quote_Line_Item__c WHERE Quote_Line_Item__c =:qliId';
+        List<SF_Quote_Line_Item__c> optionItems = Database.query(dynamicQueryForOptions);
+
+        List<SF_Quote_Line_Item__c> clonedOptionItems = new List<SF_Quote_Line_Item__c>();
+        for(SF_Quote_Line_Item__c optionItem : optionItems){
+            SF_Quote_Line_Item__c cloneOptions = optionItem.clone(false, true, true, true);
+            cloneOptions.Quote_Line_Item__c = clonedBundleItems[0].Id;
+            clonedOptionItems.add(cloneOptions);
         }
 
-    List<SF_Quote_Line_Item__c> bundleItems = new List<SF_Quote_Line_Item__c>();
-    List<SF_Quote_Line_Item__c> childItems = new List<SF_Quote_Line_Item__c>();
-    
-            for(SF_Quote_Line_Item__c qli : quoteLineItemList) {
-                if(qli.Is_Bundle__c) {
-                    bundleItems.add(qli);
-                } else {
-                    childItems.add(qli);
-                }
-            }
-
-            insert bundleItems;
-    
-            for(SF_Quote_Line_Item__c child : childItems) {
-                child.Quote_Line_Item__c = bundleItems[0].Id;
-            }
-
-            insert childItems;
+        insert clonedOptionItems;
     }
 
     /*
@@ -220,5 +209,28 @@ public with sharing class SF_ConfigureProductsController {
             Quantity__c = option.Quantity__c);
             update quoteLineItem;
     }
-    
+
+    /*
+     * @author: Irakli Iriauli
+     * @description: Compute Prices
+     */
+    @AuraEnabled
+    public static void computePrices(Id pliId) {
+        List<SF_Price_List_Item__c> plis = [SELECT Id, Base_Price__c FROM SF_Price_List_Item__c WHERE Id =:pliId];
+        List<SF_Quote_Line_Item__c> qlis = [SELECT Id, Product__c, Quantity__c, Total_Price__c FROM SF_Quote_Line_Item__c WHERE Price_List_Item__c =:pliId];
+        List<SF_QuantityRange__c> ranges = [SELECT Id, Quantity_From__c, Quantity_To__c, Price__c, Price_List_Item__c FROM SF_QuantityRange__c WHERE Price_List_Item__c =:pliId];
+        
+        for(SF_Quote_Line_Item__c qli : qlis) {
+            for(SF_QuantityRange__c range : ranges) {
+                for(SF_Price_List_Item__c pli : plis) {
+                    if(qli.Quantity__c >= range.Quantity_From__c && qli.Quantity__c <= range.Quantity_To__c) {
+                        qli.Total_Price__c = range.Price__c * qli.Quantity__c;
+                        pli.Base_Price__c = range.Price__c;
+                    }
+                }
+            } 
+        }
+
+        System.debug(qlis + '@@@@@@@@@Sweeft');
+    }
 }

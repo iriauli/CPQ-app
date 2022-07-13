@@ -76,6 +76,8 @@ export default class SF_configureProducts extends NavigationMixin(LightningEleme
     getColumns(result) {
         if (result.data) {
             this.columns = result.data;
+        } else if (result.error) {
+            this.error = error.data;
         }
     }
 
@@ -108,6 +110,8 @@ export default class SF_configureProducts extends NavigationMixin(LightningEleme
                     }
                 });
             });
+        } else if (result.error) {
+            this.error = error.data;
         }
 
         this.tableItems = bundleItems;
@@ -225,7 +229,6 @@ export default class SF_configureProducts extends NavigationMixin(LightningEleme
             this.rowData.newOptions.push(el);
         })
 
-            console.log(this.rowData, 'asdddddddddd');
         const filterBundle = [];
         filterBundle.push({
             Id: this.rowData.Id,
@@ -319,18 +322,8 @@ export default class SF_configureProducts extends NavigationMixin(LightningEleme
     quoteLineItemsClone(event) {
         const quoteLineItemId = event.target.dataset.id;
 
-        let bundleItems = [];
-        bundleItems = this.tableItems.filter(item => item.Id === quoteLineItemId);
-
-        bundleItems.forEach(bundle => {
-            bundle.newOptions.forEach(child => {
-                bundleItems.push(child);
-            });
-        });
-
         cloneQuoteLineItems({
-            qlis: bundleItems,
-            quoteId: this.recordId
+            qliId: quoteLineItemId,
         }).then(() => {
             refreshApex(this.dataTable);
 
